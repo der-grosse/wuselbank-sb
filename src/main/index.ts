@@ -1,13 +1,14 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { NFC } from 'nfc-pcsc'
 import icon from '../../resources/icon.png?asset'
 import type { CardStatus } from '../shared/card'
+import { fetchBalance } from './api'
+import { handleAdProtocol, listAds, registerAdSchemePrivileged } from './ads'
 
-// Endpoint that returns a child's Wusel balance for a given card UID.
-// Expected: GET `${BALANCE_URL}/<uid>` -> { "balance": number, "name"?: string }
-const BALANCE_URL = 'http://localhost:3000/balance'
+// Custom `ad://` scheme must be registered before the app is ready.
+registerAdSchemePrivileged()
 
 // Minimum/maximum time the "reading" state is shown, so the loading animation
 // is always visible even when the server responds instantly.
@@ -57,27 +58,13 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-/** Fetch the balance for a card UID, returning a renderer-ready status. */
-async function fetchBalance(uid: string): Promise<CardStatus> {
-  try {
-    const response = await fetch(`${BALANCE_URL}/${encodeURIComponent(uid)}`)
-    if (!response.ok) {
-      return { state: 'error', message: `Server antwortet mit ${response.status}` }
-    }
-    const data = (await response.json()) as { balance: number; name?: string }
-    return { state: 'success', balance: data.balance, name: data.name }
-  } catch {
-    return { state: 'error', message: 'Server nicht erreichbar' }
-  }
-}
-
 /** Handle a single card tap: show loading, fetch, then report the result. */
-async function handleCard(uid: string): Promise<void> {
+async function handleCard(cardId: string | number): Promise<void> {
   sendCardStatus({ state: 'reading' })
 
   // Artificial minimum delay so the loading animation is always perceptible.
   const minDuration = MIN_READING_MS + Math.random() * (MAX_READING_MS - MIN_READING_MS)
-  const [status] = await Promise.all([fetchBalance(uid), delay(minDuration)])
+  const [status] = await Promise.all([fetchBalance(cardId), delay(minDuration)])
 
   sendCardStatus(status)
 }
@@ -121,6 +108,11 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+
+  handleAdProtocol()
+  ipcMain.handle('ads:list', () => listAds())
+  // Dev helper: simulate a card read by id (drives the real fetchBalance path).
+  ipcMain.handle('card:simulate', (_event, cardId: string | number) => handleCard(cardId))
 
   createWindow()
 

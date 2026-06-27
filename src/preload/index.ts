@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type { CardStatus } from '../shared/card'
+import type { AdLists } from '../shared/ads'
 
 // Custom APIs for renderer
 const api = {
@@ -13,7 +14,14 @@ const api = {
       callback(status)
     ipcRenderer.on('card-status', listener)
     return () => ipcRenderer.removeListener('card-status', listener)
-  }
+  },
+
+  /** Fetch the ads currently available in the ads folder. */
+  listAds: (): Promise<AdLists> => ipcRenderer.invoke('ads:list'),
+
+  /** Simulate a card read by id, using the real balance-fetch path. */
+  simulateCard: (cardId: string | number): Promise<void> =>
+    ipcRenderer.invoke('card:simulate', cardId)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

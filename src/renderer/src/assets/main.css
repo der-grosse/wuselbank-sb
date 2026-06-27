@@ -1,5 +1,17 @@
 @import './base.css';
 
+:root {
+  --bg: #9ecaff;
+  --accent: #ca9400;
+  --text-strong: #0f2540;
+  --text-1: #14233a;
+  --text-2: rgba(20, 35, 58, 0.6);
+  --panel-bg: rgba(255, 255, 255, 0.55);
+  --panel-border: rgba(255, 255, 255, 0.75);
+  --positive: #1f9d57;
+  --negative: #d64545;
+}
+
 body {
   display: flex;
   align-items: center;
@@ -7,76 +19,162 @@ body {
   overflow: hidden;
   user-select: none;
   cursor: none;
-  background:
-    radial-gradient(circle at 50% 0%, #2b3a8f 0%, transparent 60%),
-    linear-gradient(160deg, #0d1330 0%, #161b3a 100%);
+  color: var(--text-1);
+  background: var(--bg);
 }
 
 #root {
   width: 100vw;
   height: 100vh;
+}
+
+/*
+ * Fixed layout: full-height left and right side columns (270px each) and a top
+ * banner row (160px) over the centered main content. All ad areas are always
+ * reserved — even when empty — so the main content keeps a constant size and
+ * never shifts as ads appear or disappear. Empty ad areas show the background.
+ */
+.app-layout {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 270px 1fr 270px;
+  grid-template-rows: 160px 1fr;
+  grid-template-areas:
+    'left top  right'
+    'left main right';
+}
+
+.main-area {
+  grid-area: main;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.ad-top,
+.ad-left,
+.ad-right {
+  overflow: hidden;
+  /* Fill the (fixed) grid area: top is 160px tall, sides are 270px wide. */
+  width: 100%;
+  height: 100%;
+}
+
+.ad-top {
+  grid-area: top;
+}
+
+.ad-left {
+  grid-area: left;
+}
+
+.ad-right {
+  grid-area: right;
+}
+
+.ad-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  animation: ad-fade 600ms ease;
+}
+
+@keyframes ad-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .terminal {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 36px;
+  gap: 28px;
   width: 100%;
   max-width: 640px;
   padding: 24px;
+}
+
+.topbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 32px;
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .brand {
   font-size: 40px;
   font-weight: 800;
   letter-spacing: 1px;
-  background: linear-gradient(315deg, #ffd54a 30%, #ff8a3d);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--accent);
+}
+
+.clock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+}
+
+.clock-time {
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+
+.clock-date {
+  font-size: 14px;
+  color: var(--text-2);
 }
 
 .card-panel {
   width: 100%;
-  min-height: 320px;
-  padding: 48px 32px;
+  min-height: 540px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 20px;
   text-align: center;
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  background: var(--panel-bg);
+  box-shadow: 0 24px 60px rgba(15, 37, 64, 0.2);
   backdrop-filter: blur(12px);
   transition:
     border-color 300ms ease,
     background 300ms ease;
 }
 
-.card-panel.success {
-  border-color: rgba(120, 230, 150, 0.5);
-}
-
-.card-panel.error {
-  border-color: rgba(255, 120, 120, 0.5);
+/* State content (idle/reading/result), centered in the space below the header. */
+.card-content {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px;
 }
 
 .message {
   font-size: 26px;
   font-weight: 600;
-  color: var(--ev-c-text-1);
+  color: var(--text-1);
 }
 
 .hint {
   font-size: 16px;
-  color: var(--ev-c-text-2);
+  color: var(--text-2);
 }
 
 /* Balance result */
@@ -84,13 +182,56 @@ body {
   font-size: 64px;
   font-weight: 800;
   line-height: 1;
-  color: #fff;
+  color: var(--text-strong);
 }
 
 .balance .unit {
   font-size: 28px;
   font-weight: 600;
-  color: #ffd54a;
+  color: var(--accent);
+}
+
+/* Recent transactions */
+.transactions {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.transaction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: rgba(15, 37, 64, 0.06);
+}
+
+.tx-party {
+  font-size: 17px;
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tx-amount {
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tx-amount.in {
+  color: var(--positive);
+}
+
+.tx-amount.out {
+  color: var(--negative);
 }
 
 /* Idle NFC waves */
@@ -105,7 +246,7 @@ body {
 
 .nfc-icon .wave {
   position: absolute;
-  border: 4px solid rgba(255, 213, 74, 0.8);
+  border: 4px solid rgba(246, 182, 0, 0.85);
   border-radius: 50%;
   animation: pulse 2.4s ease-out infinite;
 }
@@ -144,8 +285,8 @@ body {
 .spinner {
   width: 72px;
   height: 72px;
-  border: 8px solid rgba(255, 255, 255, 0.15);
-  border-top-color: #ffd54a;
+  border: 8px solid rgba(15, 37, 64, 0.12);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.9s linear infinite;
 }
@@ -167,5 +308,5 @@ body {
   font-weight: 800;
   color: #fff;
   border-radius: 50%;
-  background: rgba(255, 90, 90, 0.85);
+  background: var(--negative);
 }

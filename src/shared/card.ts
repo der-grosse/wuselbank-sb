@@ -4,5 +4,12 @@
  */
 export type CardStatus =
   | { state: 'reading' }
-  | { state: 'success'; balance: number; name?: string }
+  | { state: 'success'; balance: number; name?: string; transactions: Transaction[] }
   | { state: 'error'; message: string }
+
+export interface Transaction {
+  transaction_id: number
+  sender: string
+  receiver: string
+  amount: number
+}
