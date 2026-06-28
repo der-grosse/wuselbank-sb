@@ -1,13 +1,12 @@
 @import './base.css';
 
 :root {
-  --bg: #9ecaff;
+  --bg: #100f11;
   --accent: #ca9400;
   --text-strong: #0f2540;
   --text-1: #14233a;
   --text-2: rgba(20, 35, 58, 0.6);
-  --panel-bg: rgba(255, 255, 255, 0.55);
-  --panel-border: rgba(255, 255, 255, 0.75);
+  --panel-bg: #fff;
   --positive: #1f9d57;
   --negative: #d64545;
 }
@@ -40,6 +39,8 @@ body {
   display: grid;
   grid-template-columns: 270px 1fr 270px;
   grid-template-rows: 160px 1fr;
+  gap: 42px;
+  padding: 28px;
   grid-template-areas:
     'left top  right'
     'left main right';
@@ -60,6 +61,9 @@ body {
   /* Fill the (fixed) grid area: top is 160px tall, sides are 270px wide. */
   width: 100%;
   height: 100%;
+
+  overflow: hidden;
+  border-radius: 7px;
 }
 
 .ad-top {
@@ -108,7 +112,6 @@ body {
   justify-content: space-between;
   gap: 16px;
   padding: 20px 32px;
-  background: rgba(255, 255, 255, 0.7);
 }
 
 .brand {
@@ -126,15 +129,11 @@ body {
 }
 
 .clock-time {
-  font-size: 30px;
-  font-weight: 700;
+  font-size: 64px;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
   color: var(--text-1);
-}
-
-.clock-date {
-  font-size: 14px;
-  color: var(--text-2);
 }
 
 .card-panel {
@@ -144,11 +143,11 @@ body {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  border-radius: 28px;
+  border-radius: 7px;
   overflow: hidden;
   background: var(--panel-bg);
-  box-shadow: 0 24px 60px rgba(15, 37, 64, 0.2);
-  backdrop-filter: blur(12px);
+  /* box-shadow: 0 24px 60px rgba(15, 37, 64, 0.2);
+  backdrop-filter: blur(12px); */
   transition:
     border-color 300ms ease,
     background 300ms ease;

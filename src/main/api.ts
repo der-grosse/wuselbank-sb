@@ -6,16 +6,16 @@ interface Account {
   unlimited: boolean
   account_number: number
   transactions: Transaction[]
-  cards: number[]
+  cards: string[]
   cardreaders: number[]
 }
 
 // !!! FÜR LUIS: hier das parsing von der ausgelesenen Karten ID zum Wert, der an den Server geschickt wird !!!
-function parseCardId(cardId: string | number): number {
-  return typeof cardId === 'string' ? parseInt(cardId, 10) : cardId
+function parseCardId(cardId: string): string {
+  return cardId.toUpperCase()
 }
 
-export async function fetchBalance(cardId: string | number): Promise<CardStatus> {
+export async function fetchBalance(cardId: string): Promise<CardStatus> {
   cardId = parseCardId(cardId)
   try {
     const response = await fetch('https://wuselkusen.idot-digital.com/api/accounts', {

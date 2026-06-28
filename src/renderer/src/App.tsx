@@ -3,9 +3,10 @@ import type { CardStatus, Transaction } from '../../shared/card'
 import type { AdLists } from '../../shared/ads'
 import { onCardStatus } from './cardStatus'
 
-// How long a result (balance or error) stays on screen before the UI resets
+// A result (balance or error) stays on screen as long as the card is on the
+// reader, and lingers this long after the card is removed before the UI resets
 // back to the idle "hold your card" prompt.
-const RESET_AFTER_MS = 5000
+const RESET_AFTER_REMOVAL_MS = 2000
 
 // The screen is not scrollable, so we only show the most recent few.
 const MAX_TRANSACTIONS = 4
@@ -20,13 +21,7 @@ type View = { state: 'idle' } | CardStatus
 const wuselFormatter = new Intl.NumberFormat('de-DE')
 const timeFormatter = new Intl.DateTimeFormat('de-DE', {
   hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit'
-})
-const dateFormatter = new Intl.DateTimeFormat('de-DE', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long'
+  minute: '2-digit'
 })
 
 /** A live wall-clock that re-renders every second. */
@@ -41,7 +36,6 @@ function Clock(): React.JSX.Element {
   return (
     <div className="clock">
       <span className="clock-time">{timeFormatter.format(now)}</span>
-      <span className="clock-date">{dateFormatter.format(now)}</span>
     </div>
   )
 }
@@ -145,15 +139,19 @@ function App(): React.JSX.Element {
 
     const unsubscribe = onCardStatus((status: CardStatus) => {
       clearResetTimer()
-      setView(status)
 
-      // After showing a result, return to the idle prompt automatically.
-      if (status.state === 'success' || status.state === 'error') {
+      // The card was lifted: keep the current result on screen a little longer,
+      // then return to the idle prompt. While the card stays on the reader no
+      // removal arrives, so the result remains visible indefinitely.
+      if (status.state === 'removed') {
         resetTimer.current = setTimeout(() => {
           setView({ state: 'idle' })
           resetTimer.current = null
-        }, RESET_AFTER_MS)
+        }, RESET_AFTER_REMOVAL_MS)
+        return
       }
+
+      setView(status)
     })
 
     return () => {
@@ -170,7 +168,9 @@ function App(): React.JSX.Element {
           <div className={`card-panel ${view.state}`}>
             <header className="topbar">
               <h1 className="brand">Wuselbank</h1>
-              <Clock />
+              {/* The clock only appears while waiting for a card, never over a
+                  result/account view. */}
+              {view.state === 'idle' && <Clock />}
             </header>
             <div className="card-content">{renderView(view)}</div>
           </div>

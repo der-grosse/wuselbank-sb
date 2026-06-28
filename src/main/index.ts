@@ -15,6 +15,10 @@ registerAdSchemePrivileged()
 const MIN_READING_MS = 200
 const MAX_READING_MS = 1000
 
+// The simulated card path has no physical removal event, so we fake one after
+// holding the result on screen for a bit, mirroring a real tap-and-remove.
+const SIMULATED_HOLD_MS = 4000
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -59,7 +63,7 @@ function delay(ms: number): Promise<void> {
 }
 
 /** Handle a single card tap: show loading, fetch, then report the result. */
-async function handleCard(cardId: string | number): Promise<void> {
+async function handleCard(cardId: string): Promise<void> {
   sendCardStatus({ state: 'reading' })
 
   // Artificial minimum delay so the loading animation is always perceptible.
@@ -76,9 +80,19 @@ function setupNfc(): void {
   nfc.on('reader', (reader) => {
     console.log(`NFC reader connected: ${reader.name}`)
 
+    // Tracks the most recent read so a removal doesn't reset the screen before
+    // its result has even been shown (e.g. card lifted while still reading).
+    let activeRead: Promise<void> = Promise.resolve()
+
     reader.on('card', (card) => {
       console.log(`Card detected: ${card.uid}`)
-      void handleCard(card.uid)
+      activeRead = handleCard(card.uid)
+      void activeRead
+    })
+
+    reader.on('card.off', (card) => {
+      console.log(`Card removed: ${card.uid}`)
+      void activeRead.then(() => sendCardStatus({ state: 'removed' }))
     })
 
     reader.on('error', (err) => {
@@ -112,7 +126,12 @@ app.whenReady().then(() => {
   handleAdProtocol()
   ipcMain.handle('ads:list', () => listAds())
   // Dev helper: simulate a card read by id (drives the real fetchBalance path).
-  ipcMain.handle('card:simulate', (_event, cardId: string | number) => handleCard(cardId))
+  // There is no physical removal, so emit one after a hold to clear the screen.
+  ipcMain.handle('card:simulate', async (_event, cardId: string) => {
+    await handleCard(cardId)
+    await delay(SIMULATED_HOLD_MS)
+    sendCardStatus({ state: 'removed' })
+  })
 
   createWindow()
 

@@ -22,15 +22,7 @@ gets cropped. To fill the slot with no empty bands, match the aspect ratio
 below. The slot dimensions are fixed in code (top is 160px tall, each side is
 270px wide and full height — see `src/renderer/src/assets/main.css`).
 
-| Slot              | Display box | Aspect ratio   | Recommended source (2×) |
-| ----------------- | ----------- | -------------- | ----------------------- |
-| **Side** (each)   | 270 × 1080  | **1:4**        | 540 × 2160              |
-| **Top**           | 1380 × 160  | ~8.6:1 (69:8)  | 2760 × 320              |
-
-Notes:
-
-- The **side** ratio is a constant **1:4**. Both columns use the same size.
-- The **top** banner spans the area between the two side columns
-  (1920 − 270 − 270 = 1380px wide).
-- The 2× source sizes keep images crisp on high-DPI displays; exact 1× pixel
-  values also work on a native 1920×1080 screen.
+| Slot            | Display box | Recommended source (2×) |
+| --------------- | ----------- | ----------------------- |
+| **Side** (each) | 270 × 1024  | 540 × 2048              |
+| **Top**         | 1240 × 160  | 2480 × 320              |
