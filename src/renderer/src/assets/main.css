@@ -1,7 +1,7 @@
 @import './base.css';
 
 :root {
-  --bg: #100f11;
+  --bg: #9ecaff;
   --accent: #ca9400;
   --text-strong: #0f2540;
   --text-1: #14233a;
@@ -112,6 +112,7 @@ body {
   justify-content: space-between;
   gap: 16px;
   padding: 20px 32px;
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .brand {
@@ -146,8 +147,8 @@ body {
   border-radius: 7px;
   overflow: hidden;
   background: var(--panel-bg);
-  /* box-shadow: 0 24px 60px rgba(15, 37, 64, 0.2);
-  backdrop-filter: blur(12px); */
+  box-shadow: 0 24px 60px rgba(15, 37, 64, 0.2);
+  backdrop-filter: blur(12px);
   transition:
     border-color 300ms ease,
     background 300ms ease;
