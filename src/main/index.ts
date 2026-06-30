@@ -17,7 +17,7 @@ const MAX_READING_MS = 1000
 
 // The simulated card path has no physical removal event, so we fake one after
 // holding the result on screen for a bit, mirroring a real tap-and-remove.
-const SIMULATED_HOLD_MS = 4000
+const SIMULATED_HOLD_MS = 200
 
 function createWindow(): void {
   // Create the browser window.
