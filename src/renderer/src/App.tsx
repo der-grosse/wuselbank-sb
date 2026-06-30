@@ -197,7 +197,7 @@ function renderView(view: View): React.JSX.Element {
           <p className="balance">
             {wuselFormatter.format(view.balance)} <span className="unit">Wusel</span>
           </p>
-          <TransactionList transactions={view.transactions} />
+          <TransactionList transactions={view.transactions} self={view.name} />
         </>
       )
     case 'error':
@@ -226,9 +226,11 @@ function renderView(view: View): React.JSX.Element {
 }
 
 function TransactionList({
-  transactions
+  transactions,
+  self
 }: {
   transactions: Transaction[]
+  self: string | undefined
 }): React.JSX.Element | null {
   if (transactions.length === 0) {
     return <p className="hint">Noch keine Buchungen</p>
@@ -236,19 +238,22 @@ function TransactionList({
 
   return (
     <ul className="transactions">
-      {transactions.slice(0, MAX_TRANSACTIONS).map((tx) => {
-        const incoming = tx.amount > 0
-        const counterparty = incoming ? tx.sender : tx.receiver
-        return (
-          <li key={tx.transaction_id} className="transaction">
-            <span className="tx-party">{counterparty}</span>
-            <span className={`tx-amount ${incoming ? 'in' : 'out'}`}>
-              {incoming ? '+' : '−'}
-              {wuselFormatter.format(Math.abs(tx.amount))} Wusel
-            </span>
-          </li>
-        )
-      })}
+      {transactions
+        .toReversed()
+        .slice(0, MAX_TRANSACTIONS)
+        .map((tx) => {
+          const incoming = tx.amount > 0
+          const counterparty = tx.sender === self ? tx.receiver : tx.sender
+          return (
+            <li key={tx.transaction_id} className="transaction">
+              <span className="tx-party">{counterparty}</span>
+              <span className={`tx-amount ${incoming ? 'in' : 'out'}`}>
+                {incoming ? '+' : '−'}
+                {wuselFormatter.format(Math.abs(tx.amount))} Wusel
+              </span>
+            </li>
+          )
+        })}
     </ul>
   )
 }
