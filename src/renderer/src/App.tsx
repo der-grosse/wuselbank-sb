@@ -242,13 +242,19 @@ function TransactionList({
         .toReversed()
         .slice(0, MAX_TRANSACTIONS)
         .map((tx) => {
-          const incoming = tx.amount > 0
+          if (tx.amount < 0) {
+            const receiver = tx.receiver
+            tx.receiver = tx.sender
+            tx.sender = receiver
+            tx.amount = -tx.amount
+          }
+          const sending = tx.sender === self
           const counterparty = tx.sender === self ? tx.receiver : tx.sender
           return (
             <li key={tx.transaction_id} className="transaction">
               <span className="tx-party">{counterparty}</span>
-              <span className={`tx-amount ${incoming ? 'in' : 'out'}`}>
-                {incoming ? '+' : '−'}
+              <span className={`tx-amount ${sending ? 'out' : 'in'}`}>
+                {sending ? '−' : '+'}
                 {wuselFormatter.format(Math.abs(tx.amount))} Wusel
               </span>
             </li>
